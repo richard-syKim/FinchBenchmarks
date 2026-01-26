@@ -20,6 +20,9 @@ Random.seed!(1234)
 # Parsing Arguments
 s = ArgParseSettings("Run Parallel SpAdd Experiments.")
 @add_arg_table! s begin
+   "--ncpu"
+    help = "number of CPUs"
+    arg_type = Int
     "--output", "-o"
     arg_type = String
     help = "output file path"
@@ -38,9 +41,12 @@ parsed_args = parse_args(ARGS, s)
 # Mapping from dataset types to datasets
 datasets = Dict(
     "uniform" => [
-        OrderedDict("size" => 1_000, "sparsity" => 0.1),
-        OrderedDict("size" => 10_000, "sparsity" => 0.1),
-        OrderedDict("size" => 1_000_000, "sparsity" => 3_000_000),
+        OrderedDict("size" => 1024, "sparsity" => 0.1),
+        OrderedDict("size" => 2048, "sparsity" => 0.1),
+        OrderedDict("size" => 4096, "sparsity" => 0.1),
+        OrderedDict("size" => 8192, "sparsity" => 0.1),
+        OrderedDict("size" => 16384, "sparsity" => 0.1),
+        OrderedDict("size" => 32768, "sparsity" => 0.1),
     ],
     "FEMLAB" => [
         "FEMLAB/poisson3Da",
@@ -51,12 +57,15 @@ datasets = Dict(
 # Mapping from method keywords to methods
 include("serial_default_implementation.jl")
 # include("parallel_col_separate_sparselist_results.jl")
-include("separated_memory_concatenate_results.jl")
+# include("separated_memory_concatenate_results.jl")
+include("shard_implementation.jl")
+
 
 methods = OrderedDict(
     "serial_default_implementation" => serial_default_implementation_add,
     # "parallel_col_separate_sparselist_results" => parallel_col_separate_sparselist_results_add,
-    "separated_memory_concatenate_results" => separated_memory_concatenate_results_add,
+    # "separated_memory_concatenate_results" => separated_memory_concatenate_results_add,
+    "shard_implementation" => shard_add,
 )
 
 if !isnothing(parsed_args["method"])
@@ -71,8 +80,8 @@ function calculate_results(dataset, mtxs, results)
     for mtx in mtxs
         # Get relevant matrix
         if dataset == "uniform"
-            A = fsprand(mtx["size"], mtx["size"], mtx["sparsity"])
-            B = fsprand(mtx["size"], mtx["size"], mtx["sparsity"])
+            A = fsprand(1_000, mtx["size"], mtx["sparsity"])
+            B = fsprand(1_000, mtx["size"], mtx["sparsity"])
         elseif dataset == "FEMLAB"
             A = matrixdepot(mtx)
             row_permutation = randperm(size(A, 1))
@@ -83,11 +92,12 @@ function calculate_results(dataset, mtxs, results)
         end
 
         for (key, method) in methods
-            result = method(A, B)
+            ncpu = parsed_args["ncpu"]
+            result = method(A, B, ncpu)
 
             if parsed_args["accuracy-check"]
                 # Check the result of the multiplication
-                serial_default_implementation_result = serial_default_implementation_add(A, B)
+                serial_default_implementation_result = serial_default_implementation_add(A, B, ncpu)
                 @assert result.C == serial_default_implementation_result.C "Incorrect result for $key"
             end
 
