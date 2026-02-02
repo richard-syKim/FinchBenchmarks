@@ -1,0 +1,239 @@
+    C_lvl = ((ex.bodies[1]).bodies[1]).tns.bind.lvl
+    C_lvl_2 = C_lvl.lvl
+    C_lvl_2_val = C_lvl_2.val
+    C_lvl_3 = C_lvl_2.lvl
+    C_lvl_3_ptr = C_lvl_3.ptr
+    C_lvl_3_idx = C_lvl_3.idx
+    C_lvl_4 = C_lvl_3.lvl
+    C_lvl_4_val = C_lvl_4.val
+    A = (((ex.bodies[1]).bodies[2]).body.body.rhs.args[1]).tns.bind
+    A_m = A.m
+    A_n = A.n
+    A_ptr = A.colptr
+    A_idx = A.rowval
+    A_val = A.nzval
+    B = (((ex.bodies[1]).bodies[2]).body.body.rhs.args[2]).tns.bind
+    B_m = B.m
+    B_n = B.n
+    B_ptr = B.colptr
+    B_idx = B.rowval
+    B_val = B.nzval
+    n = (Base.Threads).nthreads()
+    B_m == A_m || throw(DimensionMismatch("mismatched dimension limits ($(B_m) != $(A_m))"))
+    A_n == B_n || throw(DimensionMismatch("mismatched dimension limits ($(A_n) != $(B_n))"))
+    Finch.resize_if_smaller!(C_lvl_2_val, A_n)
+    for pos = 1:A_n
+        pointer_to_lvl = Finch.similar_level((SparseListLevel){Int64}(ElementLevel{0.0, Float64, Int64}(C_lvl_4_val), B_m, C_lvl_3_ptr, C_lvl_3_idx), 0.0, Float64, B_m)
+        pointer_to_lvl_2_ptr = pointer_to_lvl.ptr
+        pointer_to_lvl_2_idx = pointer_to_lvl.idx
+        pointer_to_lvl_3 = pointer_to_lvl.lvl
+        pointer_to_lvl_3_val = pointer_to_lvl_3.val
+        Finch.resize_if_smaller!(pointer_to_lvl_2_ptr, 1 + 1)
+        Finch.fill_range!(pointer_to_lvl_2_ptr, 0, 1 + 1, 1 + 1)
+        resize!(pointer_to_lvl_2_ptr, 1 + 1)
+        for p = 1:1
+            pointer_to_lvl_2_ptr[p + 1] += pointer_to_lvl_2_ptr[p]
+        end
+        qos_stop = pointer_to_lvl_2_ptr[1 + 1] - 1
+        resize!(pointer_to_lvl_2_idx, qos_stop)
+        resize!(pointer_to_lvl_3_val, qos_stop)
+        C_lvl_2_val[pos] = (SparseListLevel){Int64}(ElementLevel{0.0, Float64, Int64}(pointer_to_lvl_3_val), B_m, pointer_to_lvl_2_ptr, pointer_to_lvl_2_idx)
+    end
+    C_lvl_4_val_2 = (Finch).transfer((Finch.CPUSharedMemory)(Finch.CPU{:id}(n)), C_lvl_4_val)
+    C_lvl_3_ptr_2 = (Finch).transfer((Finch.CPUSharedMemory)(Finch.CPU{:id}(n)), C_lvl_3_ptr)
+    C_lvl_3_idx_2 = (Finch).transfer((Finch.CPUSharedMemory)(Finch.CPU{:id}(n)), C_lvl_3_idx)
+    C_lvl_2_val_2 = (Finch).transfer((Finch.CPUSharedMemory)(Finch.CPU{:id}(n)), C_lvl_2_val)
+    Threads.@threads :dynamic for tid = 1:n
+            Finch.@barrier begin
+                    @inbounds @fastmath(begin
+                                (Finch.CPUThread)(tid, Finch.CPU{:id}(n), (Finch.SerialTask)())
+                                (Finch.CPUThread)(tid, Finch.CPU{:id}(n), (Finch.SerialTask)())
+                                (Finch.CPUThread)(tid, Finch.CPU{:id}(n), (Finch.SerialTask)())
+                                C_lvl_2_val_3 = (Finch).transfer((Finch.CPUThread)(tid, Finch.CPU{:id}(n), (Finch.SerialTask)()), C_lvl_2_val_2)
+                                phase_start_2 = max(1, 1 + fld(A_n * (tid + -1), n))
+                                phase_stop_2 = min(A_n, fld(A_n * tid, n))
+                                if phase_stop_2 >= phase_start_2
+                                    for j_7 = phase_start_2:phase_stop_2
+                                        C_lvl_q = (1 - 1) * A_n + j_7
+                                        pointer_to_lvl_5 = C_lvl_2_val_3[C_lvl_q]
+                                        pointer_to_lvl_5_ptr = pointer_to_lvl_5.ptr
+                                        pointer_to_lvl_5_idx = pointer_to_lvl_5.idx
+                                        pointer_to_lvl_5_stop = pointer_to_lvl_5.shape
+                                        pointer_to_lvl_6 = pointer_to_lvl_5.lvl
+                                        pointer_to_lvl_6_val = pointer_to_lvl_6.val
+                                        pointer_to_lvl_5_qos_fill = pointer_to_lvl_5_ptr[1 + 1] - 1
+                                        pointer_to_lvl_5_qos_stop = pointer_to_lvl_5_qos_fill
+                                        for p_2 = 1:-1:1
+                                            pointer_to_lvl_5_ptr[p_2 + 1] = pointer_to_lvl_5_ptr[p_2 + 1] - pointer_to_lvl_5_ptr[p_2]
+                                        end
+                                        Finch.resize_if_smaller!(pointer_to_lvl_5_ptr, 1 + 1)
+                                        Finch.fill_range!(pointer_to_lvl_5_ptr, 0, 1 + 1, 1 + 1)
+                                        pointer_to_lvl_5_qos = pointer_to_lvl_5_qos_fill + 1
+                                        A_q = A_ptr[j_7]
+                                        A_q_stop = A_ptr[j_7 + 1]
+                                        if A_q < A_q_stop
+                                            A_i1 = A_idx[A_q_stop - 1]
+                                        else
+                                            A_i1 = 0
+                                        end
+                                        B_q = B_ptr[j_7]
+                                        B_q_stop = B_ptr[j_7 + 1]
+                                        if B_q < B_q_stop
+                                            B_i1 = B_idx[B_q_stop - 1]
+                                        else
+                                            B_i1 = 0
+                                        end
+                                        phase_stop_3 = min(B_m, A_i1, B_i1)
+                                        if phase_stop_3 >= 1
+                                            i = 1
+                                            if A_idx[A_q] < 1
+                                                A_q = Finch.scansearch(A_idx, 1, A_q, A_q_stop - 1)
+                                            end
+                                            if B_idx[B_q] < 1
+                                                B_q = Finch.scansearch(B_idx, 1, B_q, B_q_stop - 1)
+                                            end
+                                            while i <= phase_stop_3
+                                                A_i = A_idx[A_q]
+                                                B_i = B_idx[B_q]
+                                                phase_stop_4 = min(B_i, phase_stop_3, A_i)
+                                                if A_i == phase_stop_4 && B_i == phase_stop_4
+                                                    A_val_2 = A_val[A_q]
+                                                    B_val_2 = B_val[B_q]
+                                                    if pointer_to_lvl_5_qos > pointer_to_lvl_5_qos_stop
+                                                        pointer_to_lvl_5_qos_stop = max(pointer_to_lvl_5_qos_stop << 1, 1)
+                                                        Finch.resize_if_smaller!(pointer_to_lvl_5_idx, pointer_to_lvl_5_qos_stop)
+                                                        Finch.resize_if_smaller!(pointer_to_lvl_6_val, pointer_to_lvl_5_qos_stop)
+                                                        Finch.fill_range!(pointer_to_lvl_6_val, 0.0, pointer_to_lvl_5_qos, pointer_to_lvl_5_qos_stop)
+                                                    end
+                                                    pointer_to_lvl_6_val[pointer_to_lvl_5_qos] = B_val_2 + A_val_2
+                                                    pointer_to_lvl_5_idx[pointer_to_lvl_5_qos] = phase_stop_4
+                                                    pointer_to_lvl_5_qos += 1
+                                                    A_q += 1
+                                                    B_q += 1
+                                                elseif B_i == phase_stop_4
+                                                    B_val_2 = B_val[B_q]
+                                                    if pointer_to_lvl_5_qos > pointer_to_lvl_5_qos_stop
+                                                        pointer_to_lvl_5_qos_stop = max(pointer_to_lvl_5_qos_stop << 1, 1)
+                                                        Finch.resize_if_smaller!(pointer_to_lvl_5_idx, pointer_to_lvl_5_qos_stop)
+                                                        Finch.resize_if_smaller!(pointer_to_lvl_6_val, pointer_to_lvl_5_qos_stop)
+                                                        Finch.fill_range!(pointer_to_lvl_6_val, 0.0, pointer_to_lvl_5_qos, pointer_to_lvl_5_qos_stop)
+                                                    end
+                                                    pointer_to_lvl_6_val[pointer_to_lvl_5_qos] = B_val_2
+                                                    pointer_to_lvl_5_idx[pointer_to_lvl_5_qos] = phase_stop_4
+                                                    pointer_to_lvl_5_qos += 1
+                                                    B_q += 1
+                                                elseif A_i == phase_stop_4
+                                                    A_val_2 = A_val[A_q]
+                                                    if pointer_to_lvl_5_qos > pointer_to_lvl_5_qos_stop
+                                                        pointer_to_lvl_5_qos_stop = max(pointer_to_lvl_5_qos_stop << 1, 1)
+                                                        Finch.resize_if_smaller!(pointer_to_lvl_5_idx, pointer_to_lvl_5_qos_stop)
+                                                        Finch.resize_if_smaller!(pointer_to_lvl_6_val, pointer_to_lvl_5_qos_stop)
+                                                        Finch.fill_range!(pointer_to_lvl_6_val, 0.0, pointer_to_lvl_5_qos, pointer_to_lvl_5_qos_stop)
+                                                    end
+                                                    pointer_to_lvl_6_val[pointer_to_lvl_5_qos] = A_val_2
+                                                    pointer_to_lvl_5_idx[pointer_to_lvl_5_qos] = phase_stop_4
+                                                    pointer_to_lvl_5_qos += 1
+                                                    A_q += 1
+                                                end
+                                                i = phase_stop_4 + 1
+                                            end
+                                        end
+                                        phase_start_5 = max(1, 1 + A_i1)
+                                        phase_stop_5 = min(B_m, B_i1)
+                                        if phase_stop_5 >= phase_start_5
+                                            if B_idx[B_q] < phase_start_5
+                                                B_q = Finch.scansearch(B_idx, phase_start_5, B_q, B_q_stop - 1)
+                                            end
+                                            while true
+                                                B_i = B_idx[B_q]
+                                                if B_i < phase_stop_5
+                                                    B_val_2 = B_val[B_q]
+                                                    if pointer_to_lvl_5_qos > pointer_to_lvl_5_qos_stop
+                                                        pointer_to_lvl_5_qos_stop = max(pointer_to_lvl_5_qos_stop << 1, 1)
+                                                        Finch.resize_if_smaller!(pointer_to_lvl_5_idx, pointer_to_lvl_5_qos_stop)
+                                                        Finch.resize_if_smaller!(pointer_to_lvl_6_val, pointer_to_lvl_5_qos_stop)
+                                                        Finch.fill_range!(pointer_to_lvl_6_val, 0.0, pointer_to_lvl_5_qos, pointer_to_lvl_5_qos_stop)
+                                                    end
+                                                    pointer_to_lvl_6_val[pointer_to_lvl_5_qos] = B_val_2
+                                                    pointer_to_lvl_5_idx[pointer_to_lvl_5_qos] = B_i
+                                                    pointer_to_lvl_5_qos += 1
+                                                    B_q += 1
+                                                else
+                                                    phase_stop_7 = min(B_i, phase_stop_5)
+                                                    if B_i == phase_stop_7
+                                                        B_val_2 = B_val[B_q]
+                                                        if pointer_to_lvl_5_qos > pointer_to_lvl_5_qos_stop
+                                                            pointer_to_lvl_5_qos_stop = max(pointer_to_lvl_5_qos_stop << 1, 1)
+                                                            Finch.resize_if_smaller!(pointer_to_lvl_5_idx, pointer_to_lvl_5_qos_stop)
+                                                            Finch.resize_if_smaller!(pointer_to_lvl_6_val, pointer_to_lvl_5_qos_stop)
+                                                            Finch.fill_range!(pointer_to_lvl_6_val, 0.0, pointer_to_lvl_5_qos, pointer_to_lvl_5_qos_stop)
+                                                        end
+                                                        pointer_to_lvl_6_val[pointer_to_lvl_5_qos] = B_val_2
+                                                        pointer_to_lvl_5_idx[pointer_to_lvl_5_qos] = phase_stop_7
+                                                        pointer_to_lvl_5_qos += 1
+                                                        B_q += 1
+                                                    end
+                                                    break
+                                                end
+                                            end
+                                        end
+                                        phase_start_7 = max(1, 1 + B_i1)
+                                        phase_stop_8 = min(B_m, A_i1)
+                                        if phase_stop_8 >= phase_start_7
+                                            if A_idx[A_q] < phase_start_7
+                                                A_q = Finch.scansearch(A_idx, phase_start_7, A_q, A_q_stop - 1)
+                                            end
+                                            while true
+                                                A_i = A_idx[A_q]
+                                                if A_i < phase_stop_8
+                                                    A_val_2 = A_val[A_q]
+                                                    if pointer_to_lvl_5_qos > pointer_to_lvl_5_qos_stop
+                                                        pointer_to_lvl_5_qos_stop = max(pointer_to_lvl_5_qos_stop << 1, 1)
+                                                        Finch.resize_if_smaller!(pointer_to_lvl_5_idx, pointer_to_lvl_5_qos_stop)
+                                                        Finch.resize_if_smaller!(pointer_to_lvl_6_val, pointer_to_lvl_5_qos_stop)
+                                                        Finch.fill_range!(pointer_to_lvl_6_val, 0.0, pointer_to_lvl_5_qos, pointer_to_lvl_5_qos_stop)
+                                                    end
+                                                    pointer_to_lvl_6_val[pointer_to_lvl_5_qos] = A_val_2
+                                                    pointer_to_lvl_5_idx[pointer_to_lvl_5_qos] = A_i
+                                                    pointer_to_lvl_5_qos += 1
+                                                    A_q += 1
+                                                else
+                                                    phase_stop_10 = min(A_i, phase_stop_8)
+                                                    if A_i == phase_stop_10
+                                                        A_val_2 = A_val[A_q]
+                                                        if pointer_to_lvl_5_qos > pointer_to_lvl_5_qos_stop
+                                                            pointer_to_lvl_5_qos_stop = max(pointer_to_lvl_5_qos_stop << 1, 1)
+                                                            Finch.resize_if_smaller!(pointer_to_lvl_5_idx, pointer_to_lvl_5_qos_stop)
+                                                            Finch.resize_if_smaller!(pointer_to_lvl_6_val, pointer_to_lvl_5_qos_stop)
+                                                            Finch.fill_range!(pointer_to_lvl_6_val, 0.0, pointer_to_lvl_5_qos, pointer_to_lvl_5_qos_stop)
+                                                        end
+                                                        pointer_to_lvl_6_val[pointer_to_lvl_5_qos] = A_val_2
+                                                        pointer_to_lvl_5_idx[pointer_to_lvl_5_qos] = phase_stop_10
+                                                        pointer_to_lvl_5_qos += 1
+                                                        A_q += 1
+                                                    end
+                                                    break
+                                                end
+                                            end
+                                        end
+                                        pointer_to_lvl_5_ptr[1 + 1] += (pointer_to_lvl_5_qos - pointer_to_lvl_5_qos_fill) - 1
+                                        resize!(pointer_to_lvl_5_ptr, 1 + 1)
+                                        for p_3 = 1:1
+                                            pointer_to_lvl_5_ptr[p_3 + 1] += pointer_to_lvl_5_ptr[p_3]
+                                        end
+                                        qos_stop_3 = pointer_to_lvl_5_ptr[1 + 1] - 1
+                                        resize!(pointer_to_lvl_5_idx, qos_stop_3)
+                                        resize!(pointer_to_lvl_6_val, qos_stop_3)
+                                        C_lvl_2_val_3[C_lvl_q] = (SparseListLevel){Int64}(ElementLevel{0.0, Float64, Int64}(pointer_to_lvl_6_val), pointer_to_lvl_5_stop, pointer_to_lvl_5_ptr, pointer_to_lvl_5_idx)
+                                    end
+                                end
+                                phase_start_10 = max(1, 1 + fld(A_n * tid, n))
+                                if A_n >= phase_start_10
+                                    A_n + 1
+                                end
+                            end)
+                    nothing
+                end
+        end
+    (C = Tensor((DenseLevel){Int64}((SeparateLevel){SparseListLevel{Int64, Vector{Int64}, Vector{Int64}, ElementLevel{0.0, Float64, Int64, Vector{Float64}}}, Vector{SparseListLevel{Int64, Vector{Int64}, Vector{Int64}, ElementLevel{0.0, Float64, Int64, Vector{Float64}}}}}((SparseListLevel){Int64}(ElementLevel{0.0, Float64, Int64}(C_lvl_4_val_2), B_m, C_lvl_3_ptr_2, C_lvl_3_idx_2), C_lvl_2_val_2), A_n)),)
+end

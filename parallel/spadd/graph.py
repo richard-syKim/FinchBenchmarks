@@ -8,23 +8,35 @@ SPEEDUP_FOLDER = "speedup"
 RUNTIME_FOLDER = "runtime"
 RESULTS_FOLDER = "results"
 
-NTHREADS = [2**i for i in range(6)]
+NTHREADS = [2**i for i in range(6)] # Modify based on how many threads were tested
 
 DEFAULT_METHOD = "serial_default_implementation"
 SHARD_METHOD = "shard_implementation"
 METHODS = [
     DEFAULT_METHOD,
     # "parallel_col_separate_sparselist_results",
-    # "separated_memory_concatenate_results",
+    "separated_memory_concatenate_results",
     SHARD_METHOD,
 ]
 
 DATASETS = [
-    {"uniform": ["1024-0.1", "2048-0.1", "4096-0.1", "8192-0.1", "16384-0.1", "32768-0.1"]},
+    # {"uniform_a": [
+    #     "1024-0.1", "2048-0.1", "4096-0.1", "8192-0.1", "16384-0.1", "32768-0.1", 
+    #     "65536-0.1", "131072-0.1"
+    # ]},
+    # {"uniform_b": ["10000-0.00001", "10000-0.1"]},
+    {"uniform_a": ["1024-0.1", "131072-0.1"]},
+    {"uniform_b": ["10000-0.00001", "10000-0.1"]},
     {"FEMLAB": ["FEMLAB-poisson3Da", "FEMLAB-poisson3Db"]},
 ]
 
-COLORS = ["red", "gray", "cadetblue", "saddlebrown", "navy", "black"]
+COLORS = ["red", "gray", "cadetblue", "saddlebrown", "navy", "orange","black"]
+
+
+def format_sparsity(x: float) -> str:
+    # remove scientific notation, remove trailing zeros
+    s = f"{x:.12f}".rstrip("0").rstrip(".")
+    return s
 
 
 def load_json():
@@ -35,11 +47,20 @@ def load_json():
         )
         for result in results_json:
 
-            matrix = (
-                result["matrix"].replace("/", "-")
-                if result["dataset"] != "uniform"
-                else f"{result['matrix']['size']}-{result['matrix']['sparsity']}"
-            )
+            m = result["matrix"]
+
+            if isinstance(m, str):
+                matrix = m.replace("/", "-")
+            elif isinstance(m, dict):
+                matrix = f"{m['size']}-{format_sparsity(m['sparsity'])}"
+            else:
+                raise TypeError(f"Unknown matrix format: {type(m)}")
+
+            # matrix = (
+            #     result["matrix"].replace("/", "-")
+            #     if (result["dataset"] != "uniform_a" or result["dataset"] != "uniform_b")
+            #     else f"{result['matrix']['size']}-{result['matrix']['sparsity']}"
+            # )
             combine_results[result["dataset"]][matrix][result["method"]][
                 result["n_threads"]
             ] = result["time"]
@@ -99,44 +120,29 @@ def plot_runtime_result(results, dataset, matrix, save_location):
     plt.savefig(save_location)
 
 
-def weak_scaling_plot(results, dataset, save_location):
-    plt.figure(figsize=(10, 6))
-    plt.plot(
-        NTHREADS,
-        [
-            results[dataset][f"{1024 * n_thread}-0.1"][SHARD_METHOD][n_thread]
-            for n_thread in NTHREADS
-        ],
-        label="shard_implementation",
-        color="grey",
-        marker="o",
-        linestyle="-",
-        linewidth=1,
-    )
+# def weak_scaling_plot(results, dataset, save_location):
+#     plt.figure(figsize=(10, 6))
+#     plt.plot(
+#         NTHREADS,
+#         [
+#             results[dataset][f"{4096 * n_thread}-0.1"][SHARD_METHOD][n_thread]
+#             for n_thread in NTHREADS
+#         ],
+#         label="shard_implementation",
+#         color="grey",
+#         marker="o",
+#         linestyle="-",
+#         linewidth=1,
+#     )
 
-    # for color in COLORS:
-    #     plt.plot(
-    #         NTHREADS,
-    #         [
-    #             results[dataset][matrix][SHARD_METHOD][n_thread]
-    #             / results[dataset][matrix][SHARD_METHOD][1]
-    #             for n_thread in NTHREADS
-    #         ],
-    #         label="uniform",
-    #         color=color,
-    #         marker="o",
-    #         linestyle="-",
-    #         linewidth=1,
-    #     )
+#     plt.title(f"SpAdd - Weak Scaling with 10,000 x 4096 matrix per thread for {dataset}")
+#     plt.xscale("log", base=2)
+#     plt.xticks(NTHREADS)
+#     plt.xlabel("Number of Threads")
+#     plt.ylabel(f"Runtime (in seconds)")
 
-    plt.title(f"SpAdd - Weak Scaling for 1000 x X matrix of 0.1 sparsity")
-    plt.xscale("log", base=2)
-    plt.xticks(NTHREADS)
-    plt.xlabel("Number of Threads")
-    plt.ylabel(f"Runtime (in seconds)")
-
-    plt.legend()
-    plt.savefig(save_location)
+#     plt.legend()
+#     plt.savefig(save_location)
     
 
 
@@ -158,9 +164,9 @@ if __name__ == "__main__":
                     f"{GRAPH_FOLDER}/{RUNTIME_FOLDER}/{dataset}-{matrix}.png",
                 )
             
-            if dataset == "uniform":
-                weak_scaling_plot(
-                    results,
-                    dataset,
-                    f"{GRAPH_FOLDER}/{RUNTIME_FOLDER}/weak_scaling_{dataset}.png",
-                )
+            # if dataset == "uniform_a":
+            #     weak_scaling_plot(
+            #         results,
+            #         dataset,
+            #         f"{GRAPH_FOLDER}/{RUNTIME_FOLDER}/weak_scaling_{dataset}.png",
+            #     )

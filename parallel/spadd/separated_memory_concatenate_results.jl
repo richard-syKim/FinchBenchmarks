@@ -4,35 +4,40 @@ using Base.Threads
 
 include("concat.jl")
 
-function separated_memory_concatenate_results_add(A, B)
+function separated_memory_concatenate_results_add(A, B, num_cpu)
     _A = Tensor(Dense(SparseList(Element(0.0))), A)
     _B = Tensor(Dense(SparseList(Element(0.0))), B)
-    time = @belapsed begin
-        (_A, _B) = $(_A, _B)
-        num_threads = Threads.nthreads()
-        partial_sum = Vector{Tensor{DenseLevel{Int64,SparseListLevel{Int64,Vector{Int64},Vector{Int64},ElementLevel{0.0,Float64,Int64,Vector{Float64}}}}}}(undef, num_threads)
-        partial_nonzero_ptr = Vector{Int64}(undef, num_threads + 1)
-        partial_nonzero_ptr[1] = 0
-        partial_column = Vector{Int64}(undef, num_threads + 1)
-        partial_column[1] = 0
 
-        num_col = size(_A)[2]
-        Threads.@threads for k = 1:num_threads
-            start_col = 1 + div((k - 1) * num_col, num_threads)
-            stop_col = div(k * num_col, num_threads)
-            partial_column[k+1] = stop_col
-            result = partial_add(_A, _B, start_col, stop_col)
-            partial_sum[k] = result.tensor
-            partial_nonzero_ptr[k+1] = result.num_nonzero
-        end
+    time = @belapsed kernel($(_A), $(_B))
 
-        for i in 2:length(partial_nonzero_ptr)
-            partial_nonzero_ptr[i] += partial_nonzero_ptr[i-1]
-        end
+    C = kernel(_A, _B)
 
-        global _C = concat_vec(partial_sum, partial_nonzero_ptr, partial_column)
+    return (; time=time, C=C)
+end
+
+function kernel(_A, _B)
+    num_threads = Threads.nthreads()
+    partial_sum = Vector{Tensor{DenseLevel{Int64,SparseListLevel{Int64,Vector{Int64},Vector{Int64},ElementLevel{0.0,Float64,Int64,Vector{Float64}}}}}}(undef, num_threads)
+    partial_nonzero_ptr = Vector{Int64}(undef, num_threads + 1)
+    partial_nonzero_ptr[1] = 0
+    partial_column = Vector{Int64}(undef, num_threads + 1)
+    partial_column[1] = 0
+
+    num_col = size(_A)[2]
+    Threads.@threads for k = 1:num_threads
+        start_col = 1 + div((k - 1) * num_col, num_threads)
+        stop_col = div(k * num_col, num_threads)
+        partial_column[k+1] = stop_col
+        result = partial_add(_A, _B, start_col, stop_col)
+        partial_sum[k] = result.tensor
+        partial_nonzero_ptr[k+1] = result.num_nonzero
     end
-    return (; time=time, C=_C)
+
+    for i in 2:length(partial_nonzero_ptr)
+        partial_nonzero_ptr[i] += partial_nonzero_ptr[i-1]
+    end
+
+    return concat_vec(partial_sum, partial_nonzero_ptr, partial_column)
 end
 
 # Add A and B from column start_col to stop_col (inclusive)

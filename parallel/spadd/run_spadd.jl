@@ -40,13 +40,22 @@ parsed_args = parse_args(ARGS, s)
 
 # Mapping from dataset types to datasets
 datasets = Dict(
-    "uniform" => [
+    "uniform_a" => [
         OrderedDict("size" => 1024, "sparsity" => 0.1),
-        OrderedDict("size" => 2048, "sparsity" => 0.1),
-        OrderedDict("size" => 4096, "sparsity" => 0.1),
-        OrderedDict("size" => 8192, "sparsity" => 0.1),
-        OrderedDict("size" => 16384, "sparsity" => 0.1),
-        OrderedDict("size" => 32768, "sparsity" => 0.1),
+        # OrderedDict("size" => 2048, "sparsity" => 0.1),
+        # OrderedDict("size" => 4096, "sparsity" => 0.1),
+        # OrderedDict("size" => 8192, "sparsity" => 0.1),
+        # OrderedDict("size" => 16384, "sparsity" => 0.1),
+        # OrderedDict("size" => 32768, "sparsity" => 0.1),
+        # OrderedDict("size" => 65536, "sparsity" => 0.1),
+        OrderedDict("size" => 131072, "sparsity" => 0.1),
+    ],
+    "uniform_b" => [
+        OrderedDict("size" => 10_000, "sparsity" => 0.00001),
+        # OrderedDict("size" => 10_000, "sparsity" => 0.0001),
+        # OrderedDict("size" => 10_000, "sparsity" => 0.001),
+        # OrderedDict("size" => 10_000, "sparsity" => 0.01),
+        OrderedDict("size" => 10_000, "sparsity" => 0.1),
     ],
     "FEMLAB" => [
         "FEMLAB/poisson3Da",
@@ -56,15 +65,15 @@ datasets = Dict(
 
 # Mapping from method keywords to methods
 include("serial_default_implementation.jl")
-# include("parallel_col_separate_sparselist_results.jl")
-# include("separated_memory_concatenate_results.jl")
+include("parallel_col_separate_sparselist_results.jl")
+include("separated_memory_concatenate_results.jl")
 include("shard_implementation.jl")
 
 
 methods = OrderedDict(
     "serial_default_implementation" => serial_default_implementation_add,
-    # "parallel_col_separate_sparselist_results" => parallel_col_separate_sparselist_results_add,
-    # "separated_memory_concatenate_results" => separated_memory_concatenate_results_add,
+    "parallel_col_separate_sparselist_results" => parallel_col_separate_sparselist_results_add,
+    "separated_memory_concatenate_results" => separated_memory_concatenate_results_add,
     "shard_implementation" => shard_add,
 )
 
@@ -79,9 +88,12 @@ end
 function calculate_results(dataset, mtxs, results)
     for mtx in mtxs
         # Get relevant matrix
-        if dataset == "uniform"
+        if dataset == "uniform_a"
             A = fsprand(1_000, mtx["size"], mtx["sparsity"])
             B = fsprand(1_000, mtx["size"], mtx["sparsity"])
+        elseif dataset == "uniform_b"
+            A = fsprand(10_000, 10_000, mtx["sparsity"])
+            B = fsprand(10_000, 10_000, mtx["sparsity"])
         elseif dataset == "FEMLAB"
             A = matrixdepot(mtx)
             row_permutation = randperm(size(A, 1))

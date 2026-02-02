@@ -1,34 +1,48 @@
 [
     {
-        "time": 0.0055478,
+        "time": 0.0053784,
         "n_threads": 32,
         "method": "serial_default_implementation",
         "dataset": "FEMLAB",
         "matrix": "FEMLAB/poisson3Da"
     },
     {
-        "time": 0.0332419,
+        "time": 0.0049151,
+        "n_threads": 32,
+        "method": "separated_memory_concatenate_results",
+        "dataset": "FEMLAB",
+        "matrix": "FEMLAB/poisson3Da"
+    },
+    {
+        "time": 0.034169801,
         "n_threads": 32,
         "method": "shard_implementation",
         "dataset": "FEMLAB",
         "matrix": "FEMLAB/poisson3Da"
     },
     {
-        "time": 0.036877599,
+        "time": 0.0403626,
         "n_threads": 32,
         "method": "serial_default_implementation",
         "dataset": "FEMLAB",
         "matrix": "FEMLAB/poisson3Db"
     },
     {
-        "time": 0.4230131,
+        "time": 0.044838,
+        "n_threads": 32,
+        "method": "separated_memory_concatenate_results",
+        "dataset": "FEMLAB",
+        "matrix": "FEMLAB/poisson3Db"
+    },
+    {
+        "time": 0.414131798,
         "n_threads": 32,
         "method": "shard_implementation",
         "dataset": "FEMLAB",
         "matrix": "FEMLAB/poisson3Db"
     },
     {
-        "time": 0.0017735,
+        "time": 0.0017432,
         "n_threads": 32,
         "method": "serial_default_implementation",
         "dataset": "uniform",
@@ -38,7 +52,17 @@
         }
     },
     {
-        "time": 0.0056354,
+        "time": 0.0012759,
+        "n_threads": 32,
+        "method": "separated_memory_concatenate_results",
+        "dataset": "uniform",
+        "matrix": {
+            "size": 1024,
+            "sparsity": 0.1
+        }
+    },
+    {
+        "time": 0.005254,
         "n_threads": 32,
         "method": "shard_implementation",
         "dataset": "uniform",
@@ -48,87 +72,7 @@
         }
     },
     {
-        "time": 0.0035901,
-        "n_threads": 32,
-        "method": "serial_default_implementation",
-        "dataset": "uniform",
-        "matrix": {
-            "size": 2048,
-            "sparsity": 0.1
-        }
-    },
-    {
-        "time": 0.0147793,
-        "n_threads": 32,
-        "method": "shard_implementation",
-        "dataset": "uniform",
-        "matrix": {
-            "size": 2048,
-            "sparsity": 0.1
-        }
-    },
-    {
-        "time": 0.007697999,
-        "n_threads": 32,
-        "method": "serial_default_implementation",
-        "dataset": "uniform",
-        "matrix": {
-            "size": 4096,
-            "sparsity": 0.1
-        }
-    },
-    {
-        "time": 0.0271676,
-        "n_threads": 32,
-        "method": "shard_implementation",
-        "dataset": "uniform",
-        "matrix": {
-            "size": 4096,
-            "sparsity": 0.1
-        }
-    },
-    {
-        "time": 0.015115599,
-        "n_threads": 32,
-        "method": "serial_default_implementation",
-        "dataset": "uniform",
-        "matrix": {
-            "size": 8192,
-            "sparsity": 0.1
-        }
-    },
-    {
-        "time": 0.075553,
-        "n_threads": 32,
-        "method": "shard_implementation",
-        "dataset": "uniform",
-        "matrix": {
-            "size": 8192,
-            "sparsity": 0.1
-        }
-    },
-    {
-        "time": 0.034656199,
-        "n_threads": 32,
-        "method": "serial_default_implementation",
-        "dataset": "uniform",
-        "matrix": {
-            "size": 16384,
-            "sparsity": 0.1
-        }
-    },
-    {
-        "time": 0.154282999,
-        "n_threads": 32,
-        "method": "shard_implementation",
-        "dataset": "uniform",
-        "matrix": {
-            "size": 16384,
-            "sparsity": 0.1
-        }
-    },
-    {
-        "time": 0.0635127,
+        "time": 0.0651211,
         "n_threads": 32,
         "method": "serial_default_implementation",
         "dataset": "uniform",
@@ -138,7 +82,17 @@
         }
     },
     {
-        "time": 0.579420897,
+        "time": 0.0660621,
+        "n_threads": 32,
+        "method": "separated_memory_concatenate_results",
+        "dataset": "uniform",
+        "matrix": {
+            "size": 32768,
+            "sparsity": 0.1
+        }
+    },
+    {
+        "time": 0.5009043,
         "n_threads": 32,
         "method": "shard_implementation",
         "dataset": "uniform",
