@@ -8,7 +8,7 @@ SPEEDUP_FOLDER = "speedup"
 RUNTIME_FOLDER = "runtime"
 RESULTS_FOLDER = "results"
 
-NTHREADS = [2**i for i in range(6)] # Modify based on how many threads were tested
+NTHREADS = [2**i for i in range(5)] # Modify based on how many threads were tested
 
 DEFAULT_METHOD = "serial_default_implementation"
 SHARD_METHOD = "shard_implementation"
@@ -112,6 +112,7 @@ def plot_runtime_result(results, dataset, matrix, save_location):
 
     plt.title(f"SpAdd - Runtime for {dataset}: {matrix}")
     plt.xscale("log", base=2)
+    plt.yscale("log", base=2)
     plt.xticks(NTHREADS)
     plt.xlabel("Number of Threads")
     plt.ylabel(f"Runtime (in seconds)")
