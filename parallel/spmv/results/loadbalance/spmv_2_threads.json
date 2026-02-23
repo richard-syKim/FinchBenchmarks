@@ -1,0 +1,20 @@
+[
+    {
+        "computation_time": 0.059608912,
+        "total_time": 0.059608912,
+        "n_threads": 2,
+        "method": "naive",
+        "matrix_type": "log_skewed",
+        "rows": 10000,
+        "cols": 20000
+    },
+    {
+        "computation_time": 0.009320216,
+        "total_time": 0.636081903,
+        "n_threads": 2,
+        "method": "load_balanced",
+        "matrix_type": "log_skewed",
+        "rows": 10000,
+        "cols": 20000
+    }
+]
