@@ -17,7 +17,7 @@ using Finch
 using SparseArrays
 
 
-function spmv_naive(A, x, num_cpu)
+function spmv_static(A, x, num_cpu)
     _A = Tensor(Dense(SparseList(Element(0.0))), A)
     _x = Tensor(Dense(Element(0.0)), x)
 
@@ -29,7 +29,7 @@ function spmv_naive(A, x, num_cpu)
 
         @finch mode = :fast begin
             _y .= 0
-            for j = parallel(_, cpu_dev)
+            for j = parallel(_, cpu_dev, static_schedule())
                 for i = _
                     _y[j] += _A[i, j] * _x[i]
                 end
@@ -39,7 +39,73 @@ function spmv_naive(A, x, num_cpu)
 
     @finch mode = :fast begin
         _y .= 0
-        for j = parallel(_, cpu_dev)
+        for j = parallel(_, cpu_dev, static_schedule())
+            for i = _
+                _y[j] += _A[i, j] * _x[i]
+            end
+        end
+    end
+
+    return (; comp_time=time, tot_time=time, y=_y)
+end
+
+
+function spmv_greedy(A, x, num_cpu)
+    _A = Tensor(Dense(SparseList(Element(0.0))), A)
+    _x = Tensor(Dense(Element(0.0)), x)
+
+    cpu_dev = cpu(:id, num_cpu)
+    _y = Tensor(Dense(Shard(cpu_dev, Element(0.0))))
+
+    time = @belapsed begin
+        (_A, _x, _y, cpu_dev) = $(_A, _x, _y, cpu_dev)
+
+        @finch mode = :fast begin
+            _y .= 0
+            for j = parallel(_, cpu_dev, greedy_schedule())
+                for i = _
+                    _y[j] += _A[i, j] * _x[i]
+                end
+            end
+        end
+    end
+
+    @finch mode = :fast begin
+        _y .= 0
+        for j = parallel(_, cpu_dev, greedy_schedule())
+            for i = _
+                _y[j] += _A[i, j] * _x[i]
+            end
+        end
+    end
+
+    return (; comp_time=time, tot_time=time, y=_y)
+end
+
+
+function spmv_julia(A, x, num_cpu)
+    _A = Tensor(Dense(SparseList(Element(0.0))), A)
+    _x = Tensor(Dense(Element(0.0)), x)
+
+    cpu_dev = cpu(:id, num_cpu)
+    _y = Tensor(Dense(Shard(cpu_dev, Element(0.0))))
+
+    time = @belapsed begin
+        (_A, _x, _y, cpu_dev) = $(_A, _x, _y, cpu_dev)
+
+        @finch mode = :fast begin
+            _y .= 0
+            for j = parallel(_, cpu_dev, julia_schedule())
+                for i = _
+                    _y[j] += _A[i, j] * _x[i]
+                end
+            end
+        end
+    end
+
+    @finch mode = :fast begin
+        _y .= 0
+        for j = parallel(_, cpu_dev, julia_schedule())
             for i = _
                 _y[j] += _A[i, j] * _x[i]
             end
@@ -174,8 +240,8 @@ function main()
 
 
     for j = 1:ncols
-        col_density = exp(-j / ncols)
-        nnz_col = max(1, round(Int, col_density * nrows * 0.5))
+        col_density = exp(-(div(j, ncpu) * ncpu) / ncols)
+        nnz_col = max(1, round(Int, col_density * nrows * 0.125))
 
         for i = 1:nnz_col
             A[rand(1:nrows), j] = rand()
@@ -185,7 +251,9 @@ function main()
     x = rand(nrows)
 
     methods = OrderedDict(
-        "naive" => spmv_naive,
+        "static" => spmv_static,
+        "greedy" => spmv_greedy,
+        "julia" => spmv_julia,
         "load_balanced" => spmv_lb
     )
 
@@ -196,7 +264,7 @@ function main()
         result = method(A, x, ncpu)
 
         if parsed_args["accuracy-check"]
-            ref = spmv_naive(A, x, ncpu)
+            ref = spmv_static(A, x, ncpu)
             @assert isapprox(result.y, ref.y) "Incorrect result for $key"
         end
 

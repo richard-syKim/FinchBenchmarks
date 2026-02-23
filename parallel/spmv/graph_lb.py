@@ -11,9 +11,11 @@ RESULTS_FOLDER = "results/loadbalance"
 
 NTHREADS = [i + 1 for i in range(14)]
 
-DEFAULT_METHOD = "naive"
+DEFAULT_METHOD = "static"
 METHODS = [
-    "naive",
+    "static",
+    "greedy",
+    "julia",
     "load_balanced",
 ]
 
