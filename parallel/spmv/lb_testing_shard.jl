@@ -221,7 +221,6 @@ function main()
 
     ncpu = parsed_args["ncpu"]
 
-    # Transposed matrix
     block_cols = 40_000
     ncols = block_cols
     nrows = block_cols
@@ -231,7 +230,7 @@ function main()
 
     for j = 1:ncols
         col_density = exp(-(div(j, 10) * 10) / ncols)
-        nnz_col = max(1, round(Int, col_density * nrows * 0.125))
+        nnz_col = max(1, round(Int, col_density * nrows * 0.0158)) # overall 10% density
 
         for i = 1:nnz_col
             A[rand(1:nrows), j] = rand()
@@ -262,7 +261,7 @@ function main()
             "time" => result.time,
             "n_threads" => ncpu,
             "method" => key,
-            "matrix_type" => "random-1.6M",
+            "matrix_type" => "skewed-1.6M-10%",
             "rows" => nrows,
             "cols" => ncols,
         ))
