@@ -11,16 +11,16 @@ RESULTS_FOLDER = "results/loadbalance"
 
 NTHREADS = [i + 1 for i in range(14)]
 
-DEFAULT_METHOD = "static"
+DEFAULT_METHOD = "optimal"
 METHODS = [
     "static",
     "greedy",
     "julia",
-    "load_balanced",
+    "optimal",
 ]
 
 DATASETS = {
-    "log_skewed": ["log_skewed"],
+    "log_skewed": ["e^(-x/40K) Decay of nnz over rows"],
 }
 NUM_MATRICES = sum([len(matrices) for matrices in DATASETS.values()])
 
@@ -46,19 +46,16 @@ def load_json():
         for result in results_json:
 
             matrix = (result["matrix_type"].replace("/", "-"))
-            combine_results[matrix][result["method"]][result["n_threads"]] = {
-                "computation_time": result["computation_time"],
-                "total_time": result["total_time"],
-            }
+            combine_results[matrix][result["method"]][result["n_threads"]] = result["time"]
             
     return combine_results
 
 
-def plot_tot_runtime_result(results, dataset, matrix, save_location):
+def plot_runtime_result(results, dataset, matrix, save_location):
     plt.figure(figsize=(10, 10))
     for method, color in zip(METHODS, COLORS):
         y_values = [
-            results[matrix][method].get(n_thread, {}).get("total_time", None)
+            results[matrix][method][n_thread]
             for n_thread in NTHREADS
         ]
 
@@ -83,42 +80,13 @@ def plot_tot_runtime_result(results, dataset, matrix, save_location):
     plt.close()
 
 
-def plot_comp_time_result(results, dataset, matrix, save_location):
-    plt.figure(figsize=(10, 10))
-    for method, color in zip(METHODS, COLORS):
-        y_values = [
-            results[matrix][method].get(n_thread, {}).get("computation_time", None)
-            for n_thread in NTHREADS
-        ]
-
-        plt.plot(
-            NTHREADS,
-            y_values,
-            label=method,
-            color=color,
-            marker="o",
-            linestyle="-",
-            linewidth=1,
-        )
-
-    plt.title(f"Computation Time for {dataset}: {matrix}")
-    # plt.yscale("log", base=10)
-    plt.xticks(NTHREADS)
-    plt.xlabel("Number of Threads")
-    plt.ylabel(f"Compuation time (in seconds)")
-
-    plt.legend()
-    plt.savefig(save_location)
-    plt.close()
-
-
-def plot_speedup_result(results, dataset, matrix, runtime_type, save_location):
+def plot_speedup_result(results, dataset, matrix, save_location):
     plt.figure(figsize=(10, 10))
     for method, color in zip(METHODS, COLORS):
         if method != DEFAULT_METHOD:
             y_values = [
-                results[matrix][DEFAULT_METHOD].get(n_thread, {}).get(runtime_type, None)
-                / results[matrix][method].get(n_thread, {}).get(runtime_type, None)
+                results[matrix][DEFAULT_METHOD][n_thread]
+                / results[matrix][method][n_thread]
                 for n_thread in NTHREADS
             ]
 
@@ -132,7 +100,7 @@ def plot_speedup_result(results, dataset, matrix, runtime_type, save_location):
                 linewidth=1,
             )
 
-    plt.title(f"Speedup of {runtime_type} for {dataset}: {matrix} (with respect to {DEFAULT_METHOD})")
+    plt.title(f"Speedup of Runtime for {dataset}: {matrix} (with respect to {DEFAULT_METHOD})")
     # plt.yscale("log", base=10)
     plt.xticks(NTHREADS)
     plt.xlabel("Number of Threads")
@@ -149,32 +117,16 @@ if __name__ == "__main__":
     results = load_json()
     for dataset, matrices in DATASETS.items():
         for matrix in matrices:
-            plot_tot_runtime_result(
+            plot_runtime_result(
                 results,
                 dataset,
                 matrix,
-                os.path.join(GRAPH_FOLDER, RUNTIME_FOLDER, f"runtime-{dataset}-{matrix}.png"),
-            )
-
-            plot_comp_time_result(
-                results,
-                dataset,
-                matrix,
-                os.path.join(GRAPH_FOLDER, RUNTIME_FOLDER, f"comp_time-{dataset}-{matrix}.png"),
+                os.path.join(GRAPH_FOLDER, RUNTIME_FOLDER, f"{dataset}-{matrix}.png"),
             )
 
             plot_speedup_result(
                 results,
                 dataset,
                 matrix,
-                "total_time",
-                os.path.join(GRAPH_FOLDER, SPEEDUP_FOLDER, f"total_time-{dataset}-{matrix}.png"),
-            )
-
-            plot_speedup_result(
-                results,
-                dataset,
-                matrix,
-                "computation_time",
-                os.path.join(GRAPH_FOLDER, SPEEDUP_FOLDER, f"computation_time-{dataset}-{matrix}.png"),
+                os.path.join(GRAPH_FOLDER, SPEEDUP_FOLDER, f"{dataset}-{matrix}.png"),
             )
