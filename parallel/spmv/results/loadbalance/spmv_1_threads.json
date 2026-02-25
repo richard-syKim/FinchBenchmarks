@@ -1,20 +1,34 @@
 [
     {
-        "computation_time": 0.04831072,
-        "total_time": 0.04831072,
+        "time": 0.029302407,
         "n_threads": 1,
-        "method": "naive",
-        "matrix_type": "log_skewed",
-        "rows": 10000,
-        "cols": 10000
+        "method": "static",
+        "matrix_type": "skewed-1.6M-10%",
+        "rows": 40000,
+        "cols": 40000
     },
     {
-        "computation_time": 0.050552872,
-        "total_time": 0.372663074,
+        "time": 0.030553378,
         "n_threads": 1,
-        "method": "load_balanced",
-        "matrix_type": "log_skewed",
-        "rows": 10000,
-        "cols": 10000
+        "method": "greedy",
+        "matrix_type": "skewed-1.6M-10%",
+        "rows": 40000,
+        "cols": 40000
+    },
+    {
+        "time": 0.062369715,
+        "n_threads": 1,
+        "method": "julia",
+        "matrix_type": "skewed-1.6M-10%",
+        "rows": 40000,
+        "cols": 40000
+    },
+    {
+        "time": 0.029375596,
+        "n_threads": 1,
+        "method": "optimal",
+        "matrix_type": "skewed-1.6M-10%",
+        "rows": 40000,
+        "cols": 40000
     }
 ]

@@ -20,7 +20,7 @@ METHODS = [
 ]
 
 DATASETS = {
-    "log_skewed": ["e^(-x/40K) Decay of nnz over rows"],
+    "log_skewed": ["skewed-1.6M-10%"],
 }
 NUM_MATRICES = sum([len(matrices) for matrices in DATASETS.values()])
 
@@ -69,6 +69,9 @@ def plot_runtime_result(results, dataset, matrix, save_location):
             linewidth=1,
         )
 
+    if dataset == "log_skewed":
+        dataset += ": e^(-x/40K) Decay of nnz over rows"
+    
     plt.title(f"Total Runtime for {dataset}: {matrix}")
     # plt.yscale("log", base=10)
     plt.xticks(NTHREADS)
@@ -99,6 +102,9 @@ def plot_speedup_result(results, dataset, matrix, save_location):
                 linestyle="-",
                 linewidth=1,
             )
+
+    if dataset == "log_skewed":
+        dataset += ": e^(-x/40K) Decay of nnz over rows"
 
     plt.title(f"Speedup of Runtime for {dataset}: {matrix} (with respect to {DEFAULT_METHOD})")
     # plt.yscale("log", base=10)

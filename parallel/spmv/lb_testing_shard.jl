@@ -154,17 +154,11 @@ end
 function loadbalanced_mat(A, num_cpu)
     m, n = size(A)
 
-    @assert n % num_cpu == 0 "Must be divisible by num_cpu"
+    # @assert n % num_cpu == 0 "Must be divisible by num_cpu"
 
     block = div(n, num_cpu)
 
     A_lb = Tensor(Dense(SparseList(Element(0.0))), m, n)
-
-    # for j = 1:n
-    #     for i = 1:m
-    #         A_lb[i, ((j - 1) % num_cpu) * block + div(j - 1, num_cpu) + 1] = A[i, j]
-    #     end
-    # end
 
     @finch mode = :fast begin
         for j in _
@@ -182,7 +176,7 @@ function loadbalanced_vec(y, num_cpu, cpu_dev)
     n, = size(y)
     y_org = Tensor(Dense(Element(0.0)), n)
 
-    @assert n % num_cpu == 0 "Must be divisible by num_cpu"
+    # @assert n % num_cpu == 0 "Must be divisible by num_cpu"
 
     block = div(n, num_cpu)
 

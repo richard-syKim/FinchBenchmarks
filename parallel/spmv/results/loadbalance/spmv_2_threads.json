@@ -1,20 +1,34 @@
 [
     {
-        "computation_time": 0.059608912,
-        "total_time": 0.059608912,
+        "time": 0.018549082,
         "n_threads": 2,
-        "method": "naive",
-        "matrix_type": "log_skewed",
-        "rows": 10000,
-        "cols": 20000
+        "method": "static",
+        "matrix_type": "skewed-1.6M-10%",
+        "rows": 40000,
+        "cols": 40000
     },
     {
-        "computation_time": 0.009320216,
-        "total_time": 0.636081903,
+        "time": 0.016769221,
         "n_threads": 2,
-        "method": "load_balanced",
-        "matrix_type": "log_skewed",
-        "rows": 10000,
-        "cols": 20000
+        "method": "greedy",
+        "matrix_type": "skewed-1.6M-10%",
+        "rows": 40000,
+        "cols": 40000
+    },
+    {
+        "time": 0.048219984,
+        "n_threads": 2,
+        "method": "julia",
+        "matrix_type": "skewed-1.6M-10%",
+        "rows": 40000,
+        "cols": 40000
+    },
+    {
+        "time": 0.003926534,
+        "n_threads": 2,
+        "method": "optimal",
+        "matrix_type": "skewed-1.6M-10%",
+        "rows": 40000,
+        "cols": 40000
     }
 ]
