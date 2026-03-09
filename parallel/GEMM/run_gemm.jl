@@ -45,7 +45,7 @@ datasets = Dict(
         # OrderedDict("size" => 2048, "sparsity" => 0.01),
         # OrderedDict("size" => 4096, "sparsity" => 0.01),
         # OrderedDict("size" => 8192, "sparsity" => 0.01),
-        OrderedDict("size" => 16384, "sparsity" => 0.01),
+        # OrderedDict("size" => 16384, "sparsity" => 0.01),
     ],
     "uniform_b" => [
         OrderedDict("size" => 10_000, "sparsity" => 0.000001),
@@ -62,16 +62,19 @@ datasets = Dict(
 
 # Mapping from method keywords to methods
 include("serial_default_implementation.jl")
-include("handtuned_threads_implementation.jl")
+# include("handtuned_threads_implementation.jl")
 include("finch_single_parallel_implementation.jl")
-include("shard_implementation.jl")
+# include("shard_implementation.jl")
+include("gustavson.jl")
 
 
 methods = OrderedDict(
-    # "serial_default_implementation" => serial_default_implementation_mul,
+    "serial_default_implementation" => serial_default_implementation_mul,
     # "handtuned_threads_implementation" => handtuned_threads_implementation_mul,
-    # "finch_single_parallel_implementation" => finch_single_parallel_implementation_mul,
-    "shard_implementation" => shard_implementation_mul,
+    "finch_single_parallel_implementation" => finch_single_parallel_implementation_mul,
+    # "shard_implementation" => shard_implementation_mul,
+    "parallel_mul_jdim_shd" => parallel_mul_jdim_shd,
+    "parallel_mul_jdim_col" => parallel_mul_jdim_col
 )
 
 if !isnothing(parsed_args["method"])

@@ -73,7 +73,7 @@ def plot_runtime_result(results, dataset, matrix, save_location):
         dataset += ": e^(-x/40K) Decay of nnz over rows"
     
     plt.title(f"Total Runtime for {dataset}: {matrix}")
-    # plt.yscale("log", base=10)
+    plt.yscale("log", base=10)
     plt.xticks(NTHREADS)
     plt.xlabel("Number of Threads")
     plt.ylabel(f"Total Runtime (in seconds)")
@@ -107,7 +107,7 @@ def plot_speedup_result(results, dataset, matrix, save_location):
         dataset += ": e^(-x/40K) Decay of nnz over rows"
 
     plt.title(f"Speedup of Runtime for {dataset}: {matrix} (with respect to {DEFAULT_METHOD})")
-    # plt.yscale("log", base=10)
+    plt.yscale("log", base=10)
     plt.xticks(NTHREADS)
     plt.xlabel("Number of Threads")
     plt.ylabel(f"Speedup")

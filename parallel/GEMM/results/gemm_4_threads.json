@@ -1,0 +1,150 @@
+[
+    {
+        "time": 0.019614733,
+        "n_threads": 4,
+        "method": "serial_default_implementation",
+        "dataset": "uniform_a",
+        "matrix": {
+            "size": 1024,
+            "sparsity": 0.01
+        }
+    },
+    {
+        "time": 0.161720176,
+        "n_threads": 4,
+        "method": "finch_single_parallel_implementation",
+        "dataset": "uniform_a",
+        "matrix": {
+            "size": 1024,
+            "sparsity": 0.01
+        }
+    },
+    {
+        "time": 0.00308813,
+        "n_threads": 4,
+        "method": "parallel_mul_jdim_shd",
+        "dataset": "uniform_a",
+        "matrix": {
+            "size": 1024,
+            "sparsity": 0.01
+        }
+    },
+    {
+        "time": 0.005752918,
+        "n_threads": 4,
+        "method": "parallel_mul_jdim_col",
+        "dataset": "uniform_a",
+        "matrix": {
+            "size": 1024,
+            "sparsity": 0.01
+        }
+    },
+    {
+        "time": 0.155484795,
+        "n_threads": 4,
+        "method": "serial_default_implementation",
+        "dataset": "FEMLAB",
+        "matrix": "FEMLAB/poisson3Da"
+    },
+    {
+        "time": 0.159904993,
+        "n_threads": 4,
+        "method": "finch_single_parallel_implementation",
+        "dataset": "FEMLAB",
+        "matrix": "FEMLAB/poisson3Da"
+    },
+    {
+        "time": 0.068477521,
+        "n_threads": 4,
+        "method": "parallel_mul_jdim_shd",
+        "dataset": "FEMLAB",
+        "matrix": "FEMLAB/poisson3Da"
+    },
+    {
+        "time": 1.045763631,
+        "n_threads": 4,
+        "method": "parallel_mul_jdim_col",
+        "dataset": "FEMLAB",
+        "matrix": "FEMLAB/poisson3Da"
+    },
+    {
+        "time": 4.173571428571428e-6,
+        "n_threads": 4,
+        "method": "serial_default_implementation",
+        "dataset": "uniform_b",
+        "matrix": {
+            "size": 10000,
+            "sparsity": 1.0e-6
+        }
+    },
+    {
+        "time": 0.162646879,
+        "n_threads": 4,
+        "method": "finch_single_parallel_implementation",
+        "dataset": "uniform_b",
+        "matrix": {
+            "size": 10000,
+            "sparsity": 1.0e-6
+        }
+    },
+    {
+        "time": 0.014395376,
+        "n_threads": 4,
+        "method": "parallel_mul_jdim_shd",
+        "dataset": "uniform_b",
+        "matrix": {
+            "size": 10000,
+            "sparsity": 1.0e-6
+        }
+    },
+    {
+        "time": 0.139485503,
+        "n_threads": 4,
+        "method": "parallel_mul_jdim_col",
+        "dataset": "uniform_b",
+        "matrix": {
+            "size": 10000,
+            "sparsity": 1.0e-6
+        }
+    },
+    {
+        "time": 0.180391102,
+        "n_threads": 4,
+        "method": "serial_default_implementation",
+        "dataset": "uniform_b",
+        "matrix": {
+            "size": 10000,
+            "sparsity": 0.01
+        }
+    },
+    {
+        "time": 0.168074839,
+        "n_threads": 4,
+        "method": "finch_single_parallel_implementation",
+        "dataset": "uniform_b",
+        "matrix": {
+            "size": 10000,
+            "sparsity": 0.01
+        }
+    },
+    {
+        "time": 0.028624934,
+        "n_threads": 4,
+        "method": "parallel_mul_jdim_shd",
+        "dataset": "uniform_b",
+        "matrix": {
+            "size": 10000,
+            "sparsity": 0.01
+        }
+    },
+    {
+        "time": 0.199878961,
+        "n_threads": 4,
+        "method": "parallel_mul_jdim_col",
+        "dataset": "uniform_b",
+        "matrix": {
+            "size": 10000,
+            "sparsity": 0.01
+        }
+    }
+]
