@@ -4,3 +4,6 @@
 [submodule "deps/taco"]
 	path = deps/taco
 	url = https://github.com/tensor-compiler/taco
+[submodule "parallel/sum/deps/taco"]
+	path = parallel/sum/deps/taco
+	url = https://github.com/tensor-compiler/taco.git
