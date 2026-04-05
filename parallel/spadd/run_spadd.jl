@@ -64,17 +64,24 @@ datasets = Dict(
 )
 
 # Mapping from method keywords to methods
-include("serial_default_implementation.jl")
-include("parallel_col_separate_sparselist_results.jl")
-include("separated_memory_concatenate_results.jl")
+# include("serial_default_implementation.jl")
+# include("parallel_col_separate_sparselist_results.jl")
+# include("separated_memory_concatenate_results.jl")
 include("shard_implementation.jl")
-
+include("taco_impl.jl")
+include("eigen_impl.jl")
+include("mkl_impl.jl")
+include("graphBLAS_impl.jl")
 
 methods = OrderedDict(
-    "serial_default_implementation" => serial_default_implementation_add,
-    "parallel_col_separate_sparselist_results" => parallel_col_separate_sparselist_results_add,
-    "separated_memory_concatenate_results" => separated_memory_concatenate_results_add,
+    # "serial_default_implementation" => serial_default_implementation_add,
+    # "parallel_col_separate_sparselist_results" => parallel_col_separate_sparselist_results_add,
+    # "separated_memory_concatenate_results" => separated_memory_concatenate_results_add,
     "shard_implementation" => shard_add,
+    "taco_impl" => taco_impl,
+    "eigen_impl" => eigen_impl,
+    "mkl_impl" => mkl_impl,
+    "graphBLAS_impl" => graphBLAS_impl,
 )
 
 if !isnothing(parsed_args["method"])
