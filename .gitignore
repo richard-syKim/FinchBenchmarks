@@ -17,4 +17,5 @@ morphology/output/*
 opencv/*
 taco-rle/*
 taco/*
+eigen/*
 .julia/*

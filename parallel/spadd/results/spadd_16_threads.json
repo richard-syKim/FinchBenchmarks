@@ -1,6 +1,6 @@
 [
     {
-        "time": 0.001063594,
+        "time": 0.00108916,
         "n_threads": 16,
         "method": "serial_default_implementation",
         "dataset": "uniform_a",
@@ -10,7 +10,7 @@
         }
     },
     {
-        "time": 0.000144546,
+        "time": 0.000145735,
         "n_threads": 16,
         "method": "shard_implementation",
         "dataset": "uniform_a",
@@ -20,7 +20,7 @@
         }
     },
     {
-        "time": 0.001536903,
+        "time": 0.001536627,
         "n_threads": 16,
         "method": "eigen_impl",
         "dataset": "uniform_a",
@@ -30,7 +30,7 @@
         }
     },
     {
-        "time": 0.000271363,
+        "time": 0.000266137,
         "n_threads": 16,
         "method": "mkl_impl",
         "dataset": "uniform_a",
@@ -40,7 +40,7 @@
         }
     },
     {
-        "time": 0.166281513,
+        "time": 0.165757232,
         "n_threads": 16,
         "method": "serial_default_implementation",
         "dataset": "uniform_a",
@@ -50,7 +50,7 @@
         }
     },
     {
-        "time": 0.039480609,
+        "time": 0.039029872,
         "n_threads": 16,
         "method": "shard_implementation",
         "dataset": "uniform_a",
@@ -60,7 +60,7 @@
         }
     },
     {
-        "time": 0.277896339,
+        "time": 0.27751153,
         "n_threads": 16,
         "method": "eigen_impl",
         "dataset": "uniform_a",
@@ -70,7 +70,7 @@
         }
     },
     {
-        "time": 0.045114168,
+        "time": 0.044756321,
         "n_threads": 16,
         "method": "mkl_impl",
         "dataset": "uniform_a",
@@ -80,63 +80,63 @@
         }
     },
     {
-        "time": 0.00333205,
+        "time": 0.003321756,
         "n_threads": 16,
         "method": "serial_default_implementation",
         "dataset": "FEMLAB",
         "matrix": "FEMLAB/poisson3Da"
     },
     {
-        "time": 0.00046228,
+        "time": 0.000462917,
         "n_threads": 16,
         "method": "shard_implementation",
         "dataset": "FEMLAB",
         "matrix": "FEMLAB/poisson3Da"
     },
     {
-        "time": 0.00477553,
+        "time": 0.004839108,
         "n_threads": 16,
         "method": "eigen_impl",
         "dataset": "FEMLAB",
         "matrix": "FEMLAB/poisson3Da"
     },
     {
-        "time": 0.001069461,
+        "time": 0.001055864,
         "n_threads": 16,
         "method": "mkl_impl",
         "dataset": "FEMLAB",
         "matrix": "FEMLAB/poisson3Da"
     },
     {
-        "time": 0.025396903,
+        "time": 0.025082143,
         "n_threads": 16,
         "method": "serial_default_implementation",
         "dataset": "FEMLAB",
         "matrix": "FEMLAB/poisson3Db"
     },
     {
-        "time": 0.007264546,
+        "time": 0.007243001,
         "n_threads": 16,
         "method": "shard_implementation",
         "dataset": "FEMLAB",
         "matrix": "FEMLAB/poisson3Db"
     },
     {
-        "time": 0.031425992,
+        "time": 0.031129299000000003,
         "n_threads": 16,
         "method": "eigen_impl",
         "dataset": "FEMLAB",
         "matrix": "FEMLAB/poisson3Db"
     },
     {
-        "time": 0.008951992,
+        "time": 0.009014834000000001,
         "n_threads": 16,
         "method": "mkl_impl",
         "dataset": "FEMLAB",
         "matrix": "FEMLAB/poisson3Db"
     },
     {
-        "time": 3.2509e-5,
+        "time": 3.2697e-5,
         "n_threads": 16,
         "method": "serial_default_implementation",
         "dataset": "uniform_b",
@@ -146,7 +146,7 @@
         }
     },
     {
-        "time": 2.9674e-5,
+        "time": 3.0017e-5,
         "n_threads": 16,
         "method": "shard_implementation",
         "dataset": "uniform_b",
@@ -156,7 +156,7 @@
         }
     },
     {
-        "time": 5.3696e-5,
+        "time": 5.1159e-5,
         "n_threads": 16,
         "method": "eigen_impl",
         "dataset": "uniform_b",
@@ -166,7 +166,7 @@
         }
     },
     {
-        "time": 3.9875e-5,
+        "time": 4.1441000000000005e-5,
         "n_threads": 16,
         "method": "mkl_impl",
         "dataset": "uniform_b",
@@ -176,7 +176,7 @@
         }
     },
     {
-        "time": 0.127128535,
+        "time": 0.128656988,
         "n_threads": 16,
         "method": "serial_default_implementation",
         "dataset": "uniform_b",
@@ -186,7 +186,7 @@
         }
     },
     {
-        "time": 0.031593255,
+        "time": 0.031576828,
         "n_threads": 16,
         "method": "shard_implementation",
         "dataset": "uniform_b",
@@ -196,7 +196,7 @@
         }
     },
     {
-        "time": 0.211194351,
+        "time": 0.212702373,
         "n_threads": 16,
         "method": "eigen_impl",
         "dataset": "uniform_b",
@@ -206,7 +206,7 @@
         }
     },
     {
-        "time": 0.032906947,
+        "time": 0.032752997,
         "n_threads": 16,
         "method": "mkl_impl",
         "dataset": "uniform_b",
