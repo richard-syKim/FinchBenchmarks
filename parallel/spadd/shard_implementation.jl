@@ -7,7 +7,7 @@ function shard_add(A, B, num_cpu)
     _A = Tensor(Dense(SparseList(Element(0.0))), A)
     _B = Tensor(Dense(SparseList(Element(0.0))), B)
 
-    cpu_dev = cpu(:id, $num_cpu)
+    cpu_dev = cpu(:id, num_cpu)
     _C = Tensor(Dense(Shard(cpu_dev, SparseList(Element(0.0)))))
 
     time = @belapsed begin

@@ -64,24 +64,24 @@ datasets = Dict(
 )
 
 # Mapping from method keywords to methods
-# include("serial_default_implementation.jl")
+include("serial_default_implementation.jl")
 # include("parallel_col_separate_sparselist_results.jl")
 # include("separated_memory_concatenate_results.jl")
 include("shard_implementation.jl")
-include("taco_impl.jl")
+# include("taco_impl.jl")
 include("eigen_impl.jl")
 include("mkl_impl.jl")
-include("graphBLAS_impl.jl")
+#include("graphBLAS_impl.jl")
 
 methods = OrderedDict(
-    # "serial_default_implementation" => serial_default_implementation_add,
+    "serial_default_implementation" => serial_default_implementation_add,
     # "parallel_col_separate_sparselist_results" => parallel_col_separate_sparselist_results_add,
     # "separated_memory_concatenate_results" => separated_memory_concatenate_results_add,
     "shard_implementation" => shard_add,
-    "taco_impl" => taco_impl,
+    # "taco_impl" => taco_impl,
     "eigen_impl" => eigen_impl,
     "mkl_impl" => mkl_impl,
-    "graphBLAS_impl" => graphBLAS_impl,
+    # "graphblas_impl" => graphblas_impl,
 )
 
 if !isnothing(parsed_args["method"])
@@ -115,9 +115,14 @@ function calculate_results(dataset, mtxs, results)
             result = method(A, B, ncpu)
 
             if parsed_args["accuracy-check"]
-                # Check the result of the multiplication
                 serial_default_implementation_result = serial_default_implementation_add(A, B, ncpu)
-                @assert result.C == serial_default_implementation_result.C "Incorrect result for $key"
+                expected = serial_default_implementation_result.C
+                m, n = size(expected)
+                for i in 1:m
+                    for j in 1:n
+                        @assert isapprox(result.C[i,j], expected[i,j]) "Incorrect result for $key at ($i,$j): got $(result.C[i,j]), expected $(expected[i,j])"
+                    end
+                end
             end
 
             # Write result

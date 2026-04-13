@@ -1,43 +1,66 @@
-#include <Eigen/Dense>
+#include <Eigen/Sparse>
+#include <unsupported/Eigen/SparseExtra>
 #include <omp.h>
 #include <chrono>
+#include <sys/stat.h>
+#include <iostream>
+#include <cstdint>
+#include "../../deps/SparseRooflineBenchmark/src/benchmark.hpp"
 
-extern "C" {
-    double eigen_sum(const double* dense_v, int dim, double* out_sum, int n_threads) {
-        Eigen::Map<const Eigen::VectorXd> v(dense_v, dim);
+int main(int argc, char **argv){
+    auto params = parse(argc, argv);
 
-        omp_set_num_threads(n_threads);
+    int n_threads = params.max_threads;
+    omp_set_num_threads(n_threads);
 
-        const int n_warmup = 5;
-        const int n_trials = 100;
-        const int batch_size = 1000; // total time > ~1ms
-        double sum = 0.0;
-
-        // warmup
-        for (int w = 0; w < n_warmup; ++w) {
-            sum = 0.0;
-            #pragma omp parallel for reduction(+:sum)
-            for (int i = 0; i < v.size(); ++i) sum += v(i);
-        }
-
-        // actual
-        double min_time = std::numeric_limits<double>::max();
-        for (int t = 0; t < n_trials; ++t) {
-            auto start = std::chrono::steady_clock::now();
-            for (int b = 0; b < batch_size; ++b) {
-                sum = 0.0;
-                #pragma omp parallel for reduction(+:sum)
-                for (int i = 0; i < v.size(); ++i) {
-                    sum += v(i);
-                }
-            }
-            auto end = std::chrono::steady_clock::now();
-            std::chrono::duration<double> elapsed = end - start;
-            min_time = std::min(min_time, elapsed.count() / batch_size);
-        }
-
-        *out_sum = sum;
-
-        return min_time;
+    Eigen::SparseVector<double> v;
+    {
+      std::ifstream f(params.input + "/v.ttx");
+      std::string line;
+      // Skip comment lines
+      while (std::getline(f, line) && line[0] == '%') {}
+      // First non-comment line: "size nnz"
+      int64_t size, nnz;
+      std::istringstream(line) >> size >> nnz;
+      v.resize(size);
+      v.reserve(nnz);
+      int64_t idx;
+      double val;
+      while (f >> idx >> val) {
+        v.insert(idx - 1) = val;  // ttx is 1-indexed
+      }
     }
+
+    double out_sum = 0.0;
+
+    // Assemble output indices and numerically compute the result
+    auto time = benchmark(
+      []() {
+        // double s = 0.0;
+        // #pragma omp parallel for reduction(+:s)
+        // for (int i = 0; i < v.size(); ++i) s += v.coeff(i);
+        // out_sum = s;
+      },
+      [&v, &out_sum]() {
+        double s = 0.0;
+        #pragma omp parallel for reduction(+:s)
+        for (int i = 0; i < v.size(); ++i) s += v.coeff(i);
+        out_sum = s;
+      }
+    );
+
+    {
+      std::ofstream fs(params.output + "/s.ttx");
+      fs << "%%MatrixMarket matrix coordinate real general\n";
+      fs << "1 1 1\n";
+      fs << "1 1 " << std::scientific << out_sum << "\n";
+    }
+
+    json measurements;
+    measurements["time"] = time.first;
+    measurements["memory"] = 0;
+    std::ofstream measurements_file(params.output + "/measurements.json");
+    measurements_file << measurements;
+    measurements_file.close();
+    return 0;
 }

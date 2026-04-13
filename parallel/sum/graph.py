@@ -8,15 +8,19 @@ SPEEDUP_FOLDER = "speedup"
 RUNTIME_FOLDER = "runtime"
 RESULTS_FOLDER = "results"
 
-NTHREADS = [2**i for i in range(5)] # Modify based on how many threads were tested
+NTHREADS = [2**i for i in range(4)] # Modify based on how many threads were tested
 
-DEFAULT_METHOD = "serial_default_implementation"
-SHARD_METHOD = "shard_implementation"
+# DEFAULT_METHOD = "serial_default_implementation"
+# SHARD_METHOD = "shard_implementation"
 METHODS = [
-    DEFAULT_METHOD,
+    # DEFAULT_METHOD,
     # "parallel_col_separate_sparselist_results",
-    "separated_memory_concatenate_results",
-    SHARD_METHOD,
+    # "separated_memory_concatenate_results",
+    # SHARD_METHOD,
+    "coalesce_impl",
+    "taco_impl",
+    "eigen_impl",
+    "mkl_impl",
 ]
 
 DATASETS = [
@@ -25,9 +29,10 @@ DATASETS = [
     #     "65536-0.1", "131072-0.1"
     # ]},
     # {"uniform_b": ["10000-0.00001", "10000-0.1"]},
-    {"uniform_a": ["1024-0.1", "131072-0.1"]},
-    {"uniform_b": ["10000-0.00001", "10000-0.1"]},
-    {"FEMLAB": ["FEMLAB-poisson3Da", "FEMLAB-poisson3Db"]},
+    # {"uniform_a": ["1024-0.1", "131072-0.1"]},
+    # {"uniform_b": ["10000-0.00001", "10000-0.1"]},
+    {"uniform": ["100000000-0.00001", "100000000-0.1"]},
+    {"FlowIPM22": ["FlowIPM22-uni_chimera_i5", "FlowIPM22-uni_chimera_i4", "FlowIPM22-uni_chimera_i2"]},
 ]
 
 COLORS = ["red", "gray", "cadetblue", "saddlebrown", "navy", "orange","black"]
@@ -68,33 +73,33 @@ def load_json():
     return combine_results
 
 
-def plot_speedup_result(results, dataset, matrix, save_location):
-    plt.figure(figsize=(10, 6))
-    for method, color in zip(METHODS, COLORS):
-        plt.plot(
-            NTHREADS,
-            [
-                results[dataset][matrix][DEFAULT_METHOD][n_thread]
-                / results[dataset][matrix][method][n_thread]
-                for n_thread in NTHREADS
-            ],
-            label=method,
-            color=color,
-            marker="o",
-            linestyle="-",
-            linewidth=1,
-        )
+# def plot_speedup_result(results, dataset, matrix, save_location):
+#     plt.figure(figsize=(10, 6))
+#     for method, color in zip(METHODS, COLORS):
+#         plt.plot(
+#             NTHREADS,
+#             [
+#                 results[dataset][matrix][DEFAULT_METHOD][n_thread]
+#                 / results[dataset][matrix][method][n_thread]
+#                 for n_thread in NTHREADS
+#             ],
+#             label=method,
+#             color=color,
+#             marker="o",
+#             linestyle="-",
+#             linewidth=1,
+#         )
 
-    plt.title(
-        f"SpAdd - Speedup for {dataset}: {matrix} (with respect to {DEFAULT_METHOD})"
-    )
-    # plt.yscale("log", base=10)
-    plt.xticks(NTHREADS)
-    plt.xlabel("Number of Threads")
-    plt.ylabel(f"Speedup")
+#     plt.title(
+#         f"SpAdd - Speedup for {dataset}: {matrix} (with respect to {DEFAULT_METHOD})"
+#     )
+#     # plt.yscale("log", base=10)
+#     plt.xticks(NTHREADS)
+#     plt.xlabel("Number of Threads")
+#     plt.ylabel(f"Speedup")
 
-    plt.legend()
-    plt.savefig(save_location)
+#     plt.legend()
+#     plt.savefig(save_location)
 
 
 def plot_runtime_result(results, dataset, matrix, save_location):

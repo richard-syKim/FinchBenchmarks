@@ -1,62 +1,60 @@
 #include "taco.h"
-#include <omp.h>
 #include <chrono>
-#include <cstring>
+#include <sys/stat.h>
+#include <iostream>
+#include <cstdint>
+#include "../../deps/SparseRooflineBenchmark/src/benchmark.hpp"
+
+namespace fs = std::filesystem;
 
 using namespace taco;
 
-extern "C" {
-    double taco_sum(const double* dense_v, int dim, double* out_sum, int n_threads) {
-        Tensor<double> v("v", {dim}, Format({Sparse}));
-        for (int k = 0; k < dim; ++k) {
-            if (dense_v[k] != 0.0) {
-                v.insert({k}, dense_v[k]);
-            }
-        }
-        v.pack();
+int main(int argc, char **argv){
+    auto params = parse(argc, argv);
+    Tensor<double> v = read(fs::path(params.input)/"v.ttx", Format({Sparse}), true);
+    int dim = v.getDimension(0);
+    Tensor<double> sum("sum", {}, Format());
 
-        Tensor<double> sum("sum", {}, Format());
-        
-        IndexVar i;
-        
-        sum() += v(i);
+    IndexVar i;
+    sum() += v(i);
 
-        IndexStmt stmt = sum.getAssignment().concretize();
-        stmt = stmt.parallelize(
-            i,
-            ParallelUnit::CPUThread,
-            OutputRaceStrategy::Atomics // or Temporary if performance is better
-        );
+    IndexStmt stmt = sum.getAssignment().concretize();
 
-        sum.compile(stmt);
+    // std::cerr << "\tDebug: Parallelizie" << std::endl;
 
+    stmt = stmt.parallelize(
+        i,
+        ParallelUnit::CPUThread,
+        OutputRaceStrategy::ParallelReduction // seems to be best option
+    );
+
+    // std::cerr << "\tDebug: Compile" << std::endl;
+
+    sum.compile(stmt);
+
+    // std::cerr << "\tDebug: Execute" << std::endl;
+
+    // Assemble output indices and numerically compute the result
+    auto time = benchmark(
+      [&sum]() {
+        sum.setNeedsAssemble(true);
+        sum.setNeedsCompute(true);
+      },
+      [&sum]() {
         sum.assemble();
         sum.compute();
-        *out_sum = sum.begin()->second;
+      }
+    );
 
-        const int n_warmup = 5;
-        const int n_trials = 100;
-        const int batch_size = 1000; // total time > ~1ms
+    // write(fs::path(params.input)/"s.ttx", sum);
+    double result = ((double*)sum.getStorage().getValues().getData())[0];
 
-        // warmup
-        for (int w = 0; w < n_warmup; ++w) {
-            sum.assemble();
-            sum.compute();
-        }
-
-        // actual
-        double min_time = std::numeric_limits<double>::max();
-        for (int t = 0; t < n_trials; ++t) {
-            auto start = std::chrono::steady_clock::now();
-            for (int b = 0; b < batch_size; ++b) {
-                sum.assemble();
-                sum.compute();
-            }
-            auto end = std::chrono::steady_clock::now();
-            std::chrono::duration<double> elapsed = end - start;
-            min_time = std::min(min_time, elapsed.count() / batch_size);
-        }
-
-        return min_time;
-    }
+    json measurements;
+    measurements["time"] = time.first;
+    measurements["memory"] = 0;
+    measurements["result"] = result;
+    std::ofstream measurements_file(fs::path(params.output)/"measurements.json");
+    measurements_file << measurements;
+    measurements_file.close();
+    return 0;
 }

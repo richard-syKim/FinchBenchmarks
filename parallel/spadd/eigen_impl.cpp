@@ -1,69 +1,41 @@
-#include <Eigen/Dense>
 #include <Eigen/Sparse>
+#include <unsupported/Eigen/SparseExtra>
 #include <omp.h>
 #include <chrono>
-#include <limits>
+#include <sys/stat.h>
+#include <iostream>
+#include <cstdint>
+#include "../../deps/SparseRooflineBenchmark/src/benchmark.hpp"
 
 typedef Eigen::SparseMatrix<double, Eigen::RowMajor> SpMat;
 
-extern "C" {
-    double eigen_add(const double* a, const double* b, int rows, int cols,
-        int** c_outer_out, int** c_inner_out, double** c_vals_out, int* c_nnz_out, int n_threads) {
+int main(int argc, char **argv){
+    auto params = parse(argc, argv);
 
-        // Eigen dense matrices to sparse
-        Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> 
-            A_dense(a, rows, cols);
-        Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> 
-            B_dense(b, rows, cols);
+    int n_threads = params.max_threads;
+    omp_set_num_threads(n_threads);
+    Eigen::setNbThreads(n_threads);
 
-        SpMat A = A_dense.sparseView();
-        SpMat B = B_dense.sparseView();
+    SpMat A, B;
+    Eigen::loadMarket(A, params.input + "/A.ttx");
+    Eigen::loadMarket(B, params.input + "/B.ttx");
+    SpMat C;
 
-        omp_set_num_threads(n_threads);
-
-        SpMat C;
-
-        // warmup
-        for (int w = 0; w < n_warmup; ++w) {
-            C = A + B;
-            // C.setZero();
-        }
-
-        // actual
-        const int n_warmup   = 5;
-        const int n_trials   = 100;
-        const int batch_size = 1000;
-
-        double min_time = std::numeric_limits<double>::max();
-        for (int t = 0; t < n_trials; ++t) {
-            // C.setZero();
-            
-            auto start = std::chrono::steady_clock::now();
-            for (int b = 0; b < batch_size; ++b) {
-                C = A + B;
-            }
-            auto end = std::chrono::steady_clock::now();
-            std::chrono::duration<double> elapsed = end - start;
-            min_time = std::min(min_time, elapsed.count() / batch_size);
-        }
-
-        // CSR
-        C.makeCompressed();
-        int nnz = C.nonZeros();
-
-        int*    outer = new int[rows + 1];
-        int*    inner = new int[nnz];
-        double* vals  = new double[nnz];
-
-        std::memcpy(outer, C.outerIndexPtr(), sizeof(int) * (rows + 1));
-        std::memcpy(inner, C.innerIndexPtr(), sizeof(int) * nnz);
-        std::memcpy(vals,  C.valuePtr(),      sizeof(double) * nnz);
-
-        *c_outer_out = outer;
-        *c_inner_out = inner;
-        *c_vals_out  = vals;
-        *c_nnz_out   = nnz;
-
-        return min_time;
-    }
+    auto time = benchmark(
+      [&C, &A, &B]() {
+        C = SpMat(A.rows(), A.cols());
+      },
+      [&C, &A, &B]() {
+        C = A + B;
+      }
+    );
+    
+    Eigen::saveMarket(C, params.input + "/C.ttx");
+    json measurements;
+    measurements["time"] = time.first;
+    measurements["memory"] = 0;
+    std::ofstream measurements_file(params.output + "/measurements.json");
+    measurements_file << measurements;
+    measurements_file.close();
+    return 0;
 }

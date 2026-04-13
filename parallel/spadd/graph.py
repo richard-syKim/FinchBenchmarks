@@ -15,8 +15,10 @@ SHARD_METHOD = "shard_implementation"
 METHODS = [
     DEFAULT_METHOD,
     # "parallel_col_separate_sparselist_results",
-    "separated_memory_concatenate_results",
+    # "separated_memory_concatenate_results",
     SHARD_METHOD,
+    "eigen_impl",
+    "mkl_impl",
 ]
 
 DATASETS = [
@@ -152,12 +154,12 @@ if __name__ == "__main__":
     for datasets in DATASETS:
         for dataset, matrices in datasets.items():
             for matrix in matrices:
-                # plot_speedup_result(
-                #     results,
-                #     dataset,
-                #     matrix,
-                #     f"{GRAPH_FOLDER}/{SPEEDUP_FOLDER}/{dataset}-{matrix}.png",
-                # )
+                plot_speedup_result(
+                    results,
+                    dataset,
+                    matrix,
+                    f"{GRAPH_FOLDER}/{SPEEDUP_FOLDER}/{dataset}-{matrix}.png",
+                )
                 plot_runtime_result(
                     results,
                     dataset,

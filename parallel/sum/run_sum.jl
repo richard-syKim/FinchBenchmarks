@@ -1,5 +1,5 @@
-using Base: nothing_sentinel
 #!/usr/bin/env julia
+# using Base: nothing_sentinel
 if abspath(PROGRAM_FILE) == @__FILE__
     using Pkg
     Pkg.activate(dirname(@__DIR__))
@@ -41,13 +41,18 @@ parsed_args = parse_args(ARGS, s)
 # Mapping from dataset types to datasets
 datasets = Dict(
     "uniform" => [
-        OrderedDict("size" => 100_000, "sparsity" => 0.00001),
-        OrderedDict("size" => 100_000, "sparsity" => 0.1),
+        OrderedDict("size" => 100_000_000, "sparsity" => 0.00001),
+        OrderedDict("size" => 100_000_000, "sparsity" => 0.1),
     ],
-    "FlowIPM22" => [
-        "FlowIPM22/uni_chimera_i5",
-        "FlowIPM22/uni_chimera_i4",
-        "FlowIPM22/uni_chimera_i2",
+    # "GenBank" => [        # may be too large
+    #     "GenBank/kmer_P1a", # 139,353,211
+    #     "GenBank/kmer_A2a", # 170,728,175
+    # ],
+    "FlowIPM22" => [        # much smaller
+        "FlowIPM22/uni_chimera_i5", # 100,000	
+        "FlowIPM22/uni_chimera_i4", # 100,000	
+        "FlowIPM22/uni_chimera_i2", # 100,000	
+        # "FlowIPM22/Spielman_k600", # also large
     ],
 )
 
@@ -77,10 +82,12 @@ function calculate_results(dataset, mtxs, results)
     for mtx in mtxs
         # Get relevant matrix
         if dataset == "uniform"
-            v = fsprand(10_000, mtx["sparsity"])
+            v = fsprand(mtx["size"], mtx["sparsity"])
+            # v = Array(v)
         elseif dataset == "FlowIPM22"
             A = matrixdepot(mtx)
             v = A[1,:]
+            v = Tensor(SparseList(Element(0.0)), v)
         else
             throw(ArgumentError("Cannot recognize dataset: $dataset"))
         end
@@ -92,7 +99,13 @@ function calculate_results(dataset, mtxs, results)
             if parsed_args["accuracy-check"]
                 # Check the result of the sum
                 coalesce_impl_result = coalesce_impl(v, ncpu)
-                @assert result.s == coalesce_impl_result.s "Incorrect result for $key: $result : $coalesce_impl_result"
+
+                rtol = 1e-6
+                @assert isapprox(result.s, coalesce_impl_result.s, rtol=rtol) """
+                    Incorrect result for $key: got $(result.s), expected $(coalesce_impl_result.s)
+                    relative error = $(abs(result.s - coalesce_impl_result.s) / abs(coalesce_impl_result.s))
+                    """
+                # @assert result.s == coalesce_impl_result.s "Incorrect result for $key: $result : $coalesce_impl_result"
             end
 
             # Write result

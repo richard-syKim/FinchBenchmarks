@@ -1,14 +1,29 @@
-const MKL_LIB = joinpath(@__DIR__, "libmkl_kernel.so")
+function sum_mkl_helper(args, v, num_cpu)
+    mktempdir(prefix="input_") do tmpdir
+        v_path = joinpath(tmpdir, "v.ttx")
+        s_path = joinpath(tmpdir, "s.ttx")
+        fwrite(v_path, Tensor(SparseList(Element(0.0)), v))
 
-function mkl_impl(v, num_cpu)
+        # mkl_root = get(ENV, "MKL_ROOT", "/usr")
+        # mkl_path = joinpath(mkl_root, "lib", "x86_64-linux-gnu")
 
-    # converting to 0-based Int32
-    _v = Array(v)
-    dim = Int32(length(_v))
-    out_sum = Ref{Float64}(0.0)
-    n_threads = Int32(num_cpu)
+        sum_path = joinpath(@__DIR__, "mkl_kernel")
+        run(`$sum_path -i $tmpdir -o $tmpdir -t $num_cpu`)
 
-    elapsed = @ccall MKL_LIB.mkl_sum(_v :: Ptr{Float64}, dim :: Int32, out_sum :: Ptr{Float64}, n_threads :: Int32) :: Float64
 
-    return (; time = elapsed, s = out_sum[])
+        s = open(s_path) do f
+            for line in eachline(f)
+                startswith(line, '%') && continue  # skip %% and % lines
+                stripped = strip(line)
+                isempty(stripped) && continue      # skip the blank dimension line
+                return parse(Float64, stripped)    # first non-comment, non-empty line is the value
+            end
+        end
+        # s_tensor = fread(s_path)
+        # s = s_tensor[]
+        time = JSON.parsefile(joinpath(tmpdir, "measurements.json"))["time"]
+        return (; time = time * 10^-9, s = s)
+    end
 end
+
+mkl_impl(v, num_cpu) = sum_mkl_helper("", v, num_cpu)

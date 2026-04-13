@@ -1,14 +1,19 @@
-const EIGEN_LIB = joinpath(@__DIR__, "libeigen_kernel.so")
+function sum_eigen_helper(v, num_cpu)
+    mktempdir(prefix="input_") do tmpdir
+        v_path = joinpath(tmpdir, "v.ttx")
+        s_path = joinpath(tmpdir, "s.ttx")
+        fwrite(v_path, Tensor(SparseList(Element(0.0)), v))
 
-function eigen_impl(v, num_cpu)
+        sum_path = joinpath(@__DIR__, "eigen_kernel")
+        run(`$sum_path -i $tmpdir -o $tmpdir -t $num_cpu`)
 
-    # converting to 0-based Int32
-    _v = Array(v)
-    dim = Int32(length(_v))
-    out_sum = Ref{Float64}(0.0)
-    n_threads = Int32(num_cpu)
+        # s = fread(s_path)
+        s_tensor = fread(s_path)
+        s = s_tensor[1, 1]
 
-    elapsed = @ccall EIGEN_LIB.eigen_sum(_v :: Ptr{Float64}, dim :: Int32, out_sum :: Ptr{Float64}, n_threads :: Int32) :: Float64
-
-    return (; time = elapsed, s = out_sum[])
+        time = JSON.parsefile(joinpath(tmpdir, "measurements.json"))["time"]
+        return (; time = time * 10^-9, s = s)
+    end
 end
+
+eigen_impl(v, num_cpu) = sum_eigen_helper(v, num_cpu)

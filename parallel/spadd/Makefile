@@ -15,14 +15,24 @@ TACO_LIB      = $(TACO_DIR)/build/lib/libtaco.so
 TACO_CXXFLAGS = $(CXXFLAGS) -I$(TACO_DIR)/include -I$(TACO_DIR)/src
 TACO_LDLIBS   = -L$(TACO_DIR)/build/lib -ltaco -ldl \
                 -Wl,-rpath,$(abspath $(TACO_DIR)/build/lib)
-
 EIGEN_DIR      = ../../deps/eigen
 EIGEN_CLONE    = $(EIGEN_DIR)/.git
 EIGEN_CXXFLAGS = $(CXXFLAGS) -I$(EIGEN_DIR)
 
+# all: taco_kernel eigen_kernel mkl_kernel
+all: eigen_kernel mkl_kernel
 
-all: libtaco_kernel.so libeigen_kernel.so libmkl_kernel.so
 
+SPARSE_BENCH_DIR = ../../deps/SparseRooflineBenchmark
+SPARSE_BENCH_CLONE = $(SPARSE_BENCH_DIR)/.git
+SPARSE_BENCH = ../../deps/SparseRooflineBenchmark/build/hello
+
+$(SPARSE_BENCH_CLONE):
+	git submodule update --init $(SPARSE_BENCH_DIR)
+
+$(SPARSE_BENCH): $(SPARSE_BENCH_CLONE)
+	mkdir -p $(SPARSE_BENCH) ;\
+	touch $(SPARSE_BENCH)
 
 # Clone TACO submodule if missing
 $(TACO_CLONE):
@@ -35,34 +45,32 @@ $(TACO_LIB): $(TACO_CLONE)
 	cmake -DPYTHON=false -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DOPENMP=ON .. && \
 	make taco -j$(NPROC_VAL)
 
-libtaco_kernel.so: taco_impl.cpp $(TACO_LIB)
-	$(CXX) $(TACO_CXXFLAGS) -shared -o $@ $< $(TACO_LDLIBS)
-
+# taco_kernel: taco_impl.cpp $(TACO_LIB) $(SPARSE_BENCH)
+# 	$(CXX) $(TACO_CXXFLAGS) -o $@ $< $(TACO_LDLIBS)
 
 # Clone Eigen submodule if missing
 $(EIGEN_CLONE):
-	git submodule update --init $(EIGEN_DIR)
+	mkdir -p $(EIGEN_DIR) && \
+	curl -L https://gitlab.com/libeigen/eigen/-/archive/5.0.0/eigen-5.0.0.tar.gz | \
+	tar -xz --strip-components=1 -C $(EIGEN_DIR) && \
+	touch $(EIGEN_DIR)/.git
 
 # Eigen is header-only
-libeigen_kernel.so: eigen_impl.cpp | $(EIGEN_CLONE)
-	$(CXX) $(EIGEN_CXXFLAGS) -shared -o $@ $<
-
-
-MKL_ROOT    ?= /opt/intel/oneapi/mkl/latest
-MKL_INCLUDE  = $(MKL_ROOT)/include
-MKL_LIB      = $(MKL_ROOT)/lib/intel64
-
+eigen_kernel: eigen_impl.cpp | $(EIGEN_CLONE) $(SPARSE_BENCH)
+	$(CXX) $(TACO_CXXFLAGS) $(EIGEN_CXXFLAGS) -o $@ $< $(TACO_LDLIBS)
+MKL_ROOT    ?= /usr
+MKL_INCLUDE  = $(MKL_ROOT)/include/mkl
+MKL_LIB      = $(MKL_ROOT)/lib/x86_64-linux-gnu
 MKL_FLAGS   = -I$(MKL_INCLUDE) \
               -L$(MKL_LIB) \
               -lmkl_rt \
               -Wl,-rpath,$(MKL_LIB)
 
-libmkl_kernel.so: mkl_impl.cpp
-	$(CXX) $(CXXFLAGS) -shared $< -o $@ $(TACO_FLAGS) $(MKL_FLAGS)
-
+mkl_kernel: mkl_impl.cpp $(TACO_LIB) $(SPARSE_BENCH)
+	$(CXX) $(TACO_CXXFLAGS) $< -o $@ $(TACO_LDLIBS) $(MKL_FLAGS)
 
 clean:
-	rm -f libtaco_kernel.so libeigen_kernel.so libmkl_kernel.so
+	rm -f taco_kernel eigen_kernel mkl_kernel
 
 clean-all: clean
 	rm -rf $(TACO_DIR)/build
