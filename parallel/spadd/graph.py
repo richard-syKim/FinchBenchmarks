@@ -3,6 +3,8 @@ from collections import defaultdict
 
 import matplotlib.pyplot as plt
 
+from matplotlib.ticker import ScalarFormatter
+
 GRAPH_FOLDER = "graph"
 SPEEDUP_FOLDER = "speedup"
 RUNTIME_FOLDER = "runtime"
@@ -33,6 +35,17 @@ DATASETS = [
 ]
 
 COLORS = ["red", "gray", "cadetblue", "saddlebrown", "navy", "orange","black"]
+
+
+def human_readable(n):
+    if n >= 1_000_000_000:
+        return f"{n/1_000_000_000:.0f}B"
+    elif n >= 1_000_000:
+        return f"{n/1_000_000:.0f}M"
+    elif n >= 1_000:
+        return f"{n/1_000:.0f}K"
+    else:
+        return str(n)
 
 
 def format_sparsity(x: float) -> str:
@@ -87,13 +100,26 @@ def plot_speedup_result(results, dataset, matrix, save_location):
             linewidth=1,
         )
 
+    pretty_matrix = "-".join(
+        human_readable(int(part)) if part.isdigit() else part
+        for part in matrix.split("-")
+    )
+
+
     plt.title(
-        f"SpAdd - Speedup for {dataset}: {matrix} (with respect to {DEFAULT_METHOD})"
+        f"SpAdd - Speedup for {dataset}: {pretty_matrix} (with respect to {DEFAULT_METHOD})"
     )
     # plt.yscale("log", base=10)
     plt.xticks(NTHREADS)
     plt.xlabel("Number of Threads")
     plt.ylabel(f"Speedup")
+
+    plt.xscale("log", base=2)
+    plt.yscale("log", base=2)
+
+    plt.gca().xaxis.set_major_formatter(ScalarFormatter())
+    plt.gca().xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x)}'))
+    plt.gca().yaxis.set_major_formatter(ScalarFormatter())
 
     plt.legend()
     plt.savefig(save_location)
@@ -112,12 +138,20 @@ def plot_runtime_result(results, dataset, matrix, save_location):
             linewidth=1,
         )
 
-    plt.title(f"SpAdd - Runtime for {dataset}: {matrix}")
+    pretty_matrix = "-".join(
+        human_readable(int(part)) if part.isdigit() else part
+        for part in matrix.split("-")
+    )
+
+    plt.title(f"SpAdd - Runtime for {dataset}: {pretty_matrix}")
     plt.xscale("log", base=2)
     plt.yscale("log", base=2)
     plt.xticks(NTHREADS)
     plt.xlabel("Number of Threads")
     plt.ylabel(f"Runtime (in seconds)")
+
+    plt.gca().xaxis.set_major_formatter(ScalarFormatter())
+    # plt.gca().yaxis.set_major_formatter(ScalarFormatter())
 
     plt.legend()
     plt.savefig(save_location)
@@ -154,17 +188,22 @@ if __name__ == "__main__":
     for datasets in DATASETS:
         for dataset, matrices in datasets.items():
             for matrix in matrices:
+                pretty_matrix = "-".join(
+                    human_readable(int(part)) if part.isdigit() else part
+                    for part in matrix.split("-")
+                )
+
                 plot_speedup_result(
                     results,
                     dataset,
                     matrix,
-                    f"{GRAPH_FOLDER}/{SPEEDUP_FOLDER}/{dataset}-{matrix}.png",
+                    f"{GRAPH_FOLDER}/{SPEEDUP_FOLDER}/{dataset}-{pretty_matrix}.png",
                 )
                 plot_runtime_result(
                     results,
                     dataset,
                     matrix,
-                    f"{GRAPH_FOLDER}/{RUNTIME_FOLDER}/{dataset}-{matrix}.png",
+                    f"{GRAPH_FOLDER}/{RUNTIME_FOLDER}/{dataset}-{pretty_matrix}.png",
                 )
             
             # if dataset == "uniform_a":

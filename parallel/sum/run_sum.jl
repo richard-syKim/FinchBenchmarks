@@ -18,7 +18,7 @@ using Random
 Random.seed!(1234)
 
 # Parsing Arguments
-s = ArgParseSettings("Run Parallel SpAdd Experiments.")
+s = ArgParseSettings("Run Parallel Sum Experiments.")
 @add_arg_table! s begin
    "--ncpu"
     help = "number of CPUs"
@@ -120,7 +120,7 @@ function calculate_results(dataset, mtxs, results)
             ))
 
             if isnothing(parsed_args["output"])
-                write("results/spadd_$(Threads.nthreads())_threads.json", JSON.json(results, 4))
+                write("results/sum_$(Threads.nthreads())_threads.json", JSON.json(results, 4))
             else
                 write(parsed_args["output"], JSON.json(results, 4))
             end
